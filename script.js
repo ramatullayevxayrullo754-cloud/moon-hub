@@ -109,6 +109,20 @@ loader.load(
       }
     });
 
+    // Kuzov rangini lime-yashil qilib bo'yash (Porsche 911 GT3 R uslubida)
+    model.traverse((o) => {
+      if (!o.isMesh || !o.material) return;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      mats.forEach((m) => {
+        if (m.name === "EXT_Carpaint_Inst") {
+          m.color.set(0xb8f000);
+          m.metalness = 0.3;
+          m.roughness = 0.3;
+          m.needsUpdate = true;
+        }
+      });
+    });
+
     car.add(model);
     loadingEl.remove();
   },
