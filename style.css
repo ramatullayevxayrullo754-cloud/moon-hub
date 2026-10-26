@@ -89,3 +89,7 @@ footer {
   .overlay { padding: 20px; }
   .links { margin: 0 auto; }
 }
+
+footer p { margin: 4px 0; }
+footer .credit { font-size: 0.75rem; color: #64748b; max-width: 720px; margin: 6px auto 0; }
+footer .credit a { color: #94a3b8; }

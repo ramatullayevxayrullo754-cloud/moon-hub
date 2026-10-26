@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -61,99 +62,66 @@ grid.material.transparent = true;
 grid.material.opacity = 0.35;
 scene.add(grid);
 
-// ====== MATERIALLAR ======
-const bodyMat = new THREE.MeshStandardMaterial({ color: 0xb8f000, metalness: 0.5, roughness: 0.3 });
-const darkMat = new THREE.MeshStandardMaterial({ color: 0x111418, metalness: 0.4, roughness: 0.5 });
-const glassMat = new THREE.MeshStandardMaterial({ color: 0x0b1020, metalness: 0.9, roughness: 0.05 });
-const rimMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 1, roughness: 0.2 });
-const tireMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 });
-const lightMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3c4, emissiveIntensity: 2 });
-const tailMat = new THREE.MeshStandardMaterial({ color: 0xff2d2d, emissive: 0xff0000, emissiveIntensity: 1.5 });
-const accentMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0b, metalness: 0.5, roughness: 0.3 });
-
-// ====== MASHINA ======
+// ====== MASHINA (haqiqiy 3D model) ======
 const car = new THREE.Group();
 scene.add(car);
 
-function addBox(w, h, d, mat, x, y, z) {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-  mesh.position.set(x, y, z);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  car.add(mesh);
-  return mesh;
-}
+const loadingEl = document.createElement("div");
+loadingEl.textContent = "Yuklanmoqda…";
+loadingEl.style.cssText =
+  "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#94a3b8;" +
+  "font-family:system-ui,sans-serif;letter-spacing:0.1em;z-index:5;pointer-events:none;";
+document.body.appendChild(loadingEl);
 
-// Kuzov
-addBox(4.2, 0.45, 1.9, bodyMat, 0, 0.55, 0);      // shassi
-addBox(0.8, 0.3, 1.8, bodyMat, 1.9, 0.5, 0);      // old burun
-addBox(1.9, 0.5, 1.5, glassMat, 0.1, 1.0, 0);     // oyna
-addBox(1.4, 0.2, 1.3, bodyMat, -0.1, 1.35, 0);    // tom
-addBox(1.0, 0.25, 1.7, bodyMat, -1.6, 0.9, 0);    // orqa qism
-addBox(0.3, 0.08, 2.0, darkMat, 2.25, 0.2, 0);    // old splitter
+const loader = new GLTFLoader();
+loader.load(
+  "porsche-992-gt3-r.glb",
+  (gltf) => {
+    const model = gltf.scene;
+    model.updateMatrixWorld(true);
 
-// Orqa spoyler
-addBox(0.1, 0.45, 0.1, darkMat, -2.0, 1.15, 0.7);
-addBox(0.1, 0.45, 0.1, darkMat, -2.0, 1.15, -0.7);
-addBox(0.6, 0.1, 2.2, darkMat, -2.1, 1.5, 0);
-addBox(0.5, 0.25, 0.04, accentMat, -2.1, 1.35, 1.0);
-addBox(0.5, 0.25, 0.04, accentMat, -2.1, 1.35, -1.0);
+    // Agar model yotiq holatda bo'lsa, to'g'rilash
+    let box = new THREE.Box3().setFromObject(model);
+    let size = box.getSize(new THREE.Vector3());
+    if (size.y > size.x && size.y > size.z) {
+      model.rotation.x = -Math.PI / 2;
+      model.updateMatrixWorld(true);
+      box = new THREE.Box3().setFromObject(model);
+      size = box.getSize(new THREE.Vector3());
+    }
 
-// Chiroqlar
-addBox(0.05, 0.12, 0.5, lightMat, 2.31, 0.7, 0.55);
-addBox(0.05, 0.12, 0.5, lightMat, 2.31, 0.7, -0.55);
-addBox(0.05, 0.1, 1.4, tailMat, -2.12, 0.8, 0);
+    // Uzunligi taxminan 4.4 birlikka keltirish
+    const longest = Math.max(size.x, size.z);
+    model.scale.setScalar(4.4 / longest);
+    model.updateMatrixWorld(true);
 
-// Yon tomonidagi 911 raqami (Porsche 911 GT3 R uslubida)
-function makeBadgeTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 256;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(128, 128, 128, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#0b0b0b";
-  ctx.font = "bold 96px Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("911", 128, 134);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-const badgeMat = new THREE.MeshBasicMaterial({ map: makeBadgeTexture(), transparent: true });
-const badgeRight = new THREE.Mesh(new THREE.CircleGeometry(0.3, 48), badgeMat);
-badgeRight.position.set(-0.3, 0.7, 0.962);
-car.add(badgeRight);
-const badgeLeft = badgeRight.clone();
-badgeLeft.position.set(-0.3, 0.7, -0.962);
-badgeLeft.rotation.y = Math.PI;
-car.add(badgeLeft);
+    // Markazlash va yerga tekkizish
+    box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.x -= center.x;
+    model.position.z -= center.z;
+    model.position.y -= box.min.y;
 
-// G'ildiraklar (har biri aylanadi)
-const wheels = [];
-function addWheel(x, z) {
-  const spinner = new THREE.Group();
-  const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.34, 32), tireMat);
-  tire.rotation.x = Math.PI / 2;
-  const rimMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.36, 24), rimMat);
-  rimMesh.rotation.x = Math.PI / 2;
-  spinner.add(tire, rimMesh);
-  spinner.traverse((o) => {
-    if (o.isMesh) o.castShadow = true;
-  });
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.castShadow = true;
+        o.receiveShadow = true;
+      }
+    });
 
-  const holder = new THREE.Group();
-  holder.position.set(x, 0.36, z);
-  holder.add(spinner);
-  car.add(holder);
-  wheels.push(spinner);
-}
-addWheel(1.35, 1.0);
-addWheel(1.35, -1.0);
-addWheel(-1.35, 1.0);
-addWheel(-1.35, -1.0);
+    car.add(model);
+    loadingEl.remove();
+  },
+  (xhr) => {
+    if (xhr.total) {
+      loadingEl.textContent = `Yuklanmoqda… ${Math.round((xhr.loaded / xhr.total) * 100)}%`;
+    }
+  },
+  (err) => {
+    loadingEl.textContent = "Model yuklanmadi";
+    console.error(err);
+  }
+);
 
 // ====== ANIMATSIYA ======
 const clock = new THREE.Clock();
@@ -169,12 +137,6 @@ function animate() {
   const e = 1 - Math.pow(1 - p, 3);
   car.position.x = (1 - e) * -9;
   car.position.y = Math.sin(elapsed * 2) * 0.02 * e;
-
-  // G'ildiraklar kirish paytida tez, keyin sekin aylanadi
-  const speed = 3 + 15 * (1 - e);
-  wheels.forEach((w) => {
-    w.rotation.z -= speed * dt;
-  });
 
   // Chiroqlar rangi asta o'zgaradi
   rim.color.setHSL((elapsed * 0.05) % 1, 0.9, 0.6);
