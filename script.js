@@ -123,6 +123,49 @@ loader.load(
       });
     });
 
+    // Yon tomonlarga "911" raqami (oq doirada qora raqam)
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 512, 256);
+    ctx.fillStyle = "#0b0b0b";
+    ctx.font = "bold 190px Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("911", 256, 138);
+    const numTex = new THREE.CanvasTexture(canvas);
+    numTex.colorSpace = THREE.SRGBColorSpace;
+
+    const numWidth = Math.max(size.x, size.z) * 0.2;
+    const numGeo = new THREE.PlaneGeometry(numWidth, numWidth * 0.5);
+    const numMat = new THREE.MeshBasicMaterial({
+      map: numTex,
+      transparent: true,
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+    });
+
+    box = new THREE.Box3().setFromObject(model);
+    const bsize = box.getSize(new THREE.Vector3());
+    const bcenter = box.getCenter(new THREE.Vector3());
+    const longAlongX = bsize.x >= bsize.z;
+    const half = (longAlongX ? bsize.z : bsize.x) / 2 + 0.01;
+    const numY = box.min.y + bsize.y * 0.5;
+
+    [1, -1].forEach((side) => {
+      const plane = new THREE.Mesh(numGeo, numMat);
+      if (longAlongX) {
+        plane.position.set(bcenter.x, numY, side * half);
+        plane.rotation.y = side > 0 ? 0 : Math.PI;
+      } else {
+        plane.position.set(side * half, numY, bcenter.z);
+        plane.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
+      }
+      car.add(plane);
+    });
+
     car.add(model);
     loadingEl.remove();
   },
