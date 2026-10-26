@@ -62,14 +62,14 @@ grid.material.opacity = 0.35;
 scene.add(grid);
 
 // ====== MATERIALLAR ======
-const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, metalness: 0.6, roughness: 0.25 });
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0xb8f000, metalness: 0.5, roughness: 0.3 });
 const darkMat = new THREE.MeshStandardMaterial({ color: 0x111418, metalness: 0.4, roughness: 0.5 });
 const glassMat = new THREE.MeshStandardMaterial({ color: 0x0b1020, metalness: 0.9, roughness: 0.05 });
 const rimMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 1, roughness: 0.2 });
 const tireMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 });
 const lightMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3c4, emissiveIntensity: 2 });
 const tailMat = new THREE.MeshStandardMaterial({ color: 0xff2d2d, emissive: 0xff0000, emissiveIntensity: 1.5 });
-const accentMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.5, roughness: 0.3 });
+const accentMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0b, metalness: 0.5, roughness: 0.3 });
 
 // ====== MASHINA ======
 const car = new THREE.Group();
@@ -95,7 +95,7 @@ addBox(0.3, 0.08, 2.0, darkMat, 2.25, 0.2, 0);    // old splitter
 // Orqa spoyler
 addBox(0.1, 0.45, 0.1, darkMat, -2.0, 1.15, 0.7);
 addBox(0.1, 0.45, 0.1, darkMat, -2.0, 1.15, -0.7);
-addBox(0.5, 0.08, 2.0, darkMat, -2.1, 1.45, 0);
+addBox(0.6, 0.1, 2.2, darkMat, -2.1, 1.5, 0);
 addBox(0.5, 0.25, 0.04, accentMat, -2.1, 1.35, 1.0);
 addBox(0.5, 0.25, 0.04, accentMat, -2.1, 1.35, -1.0);
 
@@ -104,7 +104,7 @@ addBox(0.05, 0.12, 0.5, lightMat, 2.31, 0.7, 0.55);
 addBox(0.05, 0.12, 0.5, lightMat, 2.31, 0.7, -0.55);
 addBox(0.05, 0.1, 1.4, tailMat, -2.12, 0.8, 0);
 
-// Yon tomonidagi "MOON" belgisi
+// Yon tomonidagi 911 raqami (Porsche 911 GT3 R uslubida)
 function makeBadgeTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 256;
@@ -113,11 +113,11 @@ function makeBadgeTexture() {
   ctx.beginPath();
   ctx.arc(128, 128, 128, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#1d4ed8";
-  ctx.font = "bold 64px Arial, sans-serif";
+  ctx.fillStyle = "#0b0b0b";
+  ctx.font = "bold 96px Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("MOON", 128, 132);
+  ctx.fillText("911", 128, 134);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
